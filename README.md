@@ -1,8 +1,10 @@
 # Team Text - Software Architecture Overview
 
-## Service Oriented Architecture for Text Collections
+## 1. Service Oriented Architecture for Text Collections
 
-This is our current Service Oriented Architecture for making available (enriched) Text Collections:
+### 1.1. Current SOA for Text Collections
+
+This is our current Service Oriented Architecture for making available (enriched) Text Collections, it still includes uses of TextRepo.
 
 ```{.mermaid format=svg}
 flowchart TD
@@ -20,7 +22,7 @@ flowchart TD
 
     techuser -- "HTTPS + Broccoli API" --> broccoli
     subgraph middleware
-        textannoviz -- HTTP --> broccoli
+        textannoviz -- "HTTP + Broccoli API" --> broccoli
         broccoli[/"<b>Broccoli</b><br><i>(broker)</i>"/]
 
         broccoli_annorepoclient@{shape: subproc, label: "annorepo-client"}
@@ -65,7 +67,7 @@ flowchart TD
         broccoli -- "HTTP" --> sdswitch
         broccoli -- "HTTP + TextRepo API" --> textrepo
 
-        broccoli --> elasticsearch --> textindex
+        elasticsearch --> textindex
 
 
         mirador -- "HTTPS + IIIF Image API" --> cantaloupe
@@ -73,19 +75,22 @@ flowchart TD
 
 
     classDef thirdparty fill:#ccc,color:#111
-    class cantaloupe,mongodb,elasticsearch,postgresql thirdparty
+    class cantaloupe,mongodb,elasticsearch,postgresql,mirador thirdparty
 ```
+
+**Notes**:
+
+* SD-Switch is not further expanded here because I have no idea what it actually serves
 
 ### Legend:
 
 * Arrows follow caller direction, response data flows in opposite direction. Edge labels denote communication protocols.
 * Rectangles represent processes.
-* Parallelograms represent networked services.
+* Parallelograms represent networked processes (i.e. services).
 * Rectangles with an extra marked block left and right represent software libraries
 * Third party software is grayed out
 
-
-## New Service Oriented Architecture for Text Collections
+### 1.2. New proposed SOA for Text Collections 
 
 This is our new proposed Service Oriented Architecture for making available (enriched) Text Collections, it switches out Textrepo for textsurf and adds a query expansion service (kweepeer).
 
@@ -107,7 +112,7 @@ flowchart TD
 
     techuser -- "HTTPS + Broccoli API" --> broccoli
     subgraph middleware
-        textannoviz -- HTTP --> broccoli
+        textannoviz -- "HTTP + Broccoli API" --> broccoli
         broccoli[/"<b>Broccoli</b><br><i>(broker)</i>"/]
 
         broccoli_annorepoclient@{shape: subproc, label: "annorepo-client"}
@@ -158,15 +163,18 @@ flowchart TD
 
 
     classDef thirdparty fill:#ccc,color:#111
-    class cantaloupe,mongodb,elasticsearch thirdparty
+    class cantaloupe,mongodb,elasticsearch,postgresql,mirador thirdparty
 ```
 
-## Data Conversion Pipelines
+**Notes:**
+
+* Kweepeer is not further expanded in this schema, see [https://github.com/knaw-huc/kweepeer/blob/master/README.md#architecture](this schema) for further expansion.
+
+
+## 2. Data Conversion Pipelines
 
 ```{.mermaid format=svg}
 flowchart TD
-
-    start((start)) --> sources
 
     subgraph sources["Sources (pick one)"]
         direction LR
@@ -195,7 +203,7 @@ flowchart TD
         subgraph with_untangle["With un-t-ann-gle"]
             direction TB
             watm --> untangle
-            untangle["<b>un-t-ann-gle</b><br><i>Creates texts and web annotations from joined data</i>"]
+            untangle["<b>un-t-ann-gle</b><br><i>Project-specific conversion pipelines to creates texts and web annotations from joined data. Generic uploader for annorepo/textrepo.</i>"]
         end
 
         subgraph with_folia_tools["with FoLiA-tools (CLI)"]
