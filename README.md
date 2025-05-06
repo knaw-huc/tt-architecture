@@ -218,6 +218,89 @@ flowchart TD
 * Kweepeer is not further expanded in this schema, see [https://github.com/knaw-huc/kweepeer/blob/master/README.md#architecture](this schema) for further expansion.
 * Web annotations produced by this pipeline no longer have custom selectors but fully adhere to the standard.
 
+### 1.3. Potential SOA for Text Collections with STAM
+
+This is a potential and highly experimental architecture that trades out various components for [STAM](https://annotation.github.io/stam)-based solutions. Though STAM is implemented, it is currently not integrated into such a wider architecture. It is presented here merely as an option for consideration.
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": true},
+    'themeVariables': {
+      'edgeLabelBackground': 'transparent'
+    }
+}}%%
+flowchart TD
+
+
+    user@{ shape: sl-rect, label: "End-user (Researcher)<br>in web browser"}
+    user -- "HTTPS (UI)" --> textannoviz
+    subgraph frontend
+        textannoviz[/"<b>TextAnnoViz</b><br>(web front-end)"/]
+        mirador@{shape: subproc, label: "Mirador<br><i>IIIF Image viewer</i>"}
+        textannoviz --> mirador
+
+        tavconf@{ shape: doc, label: "TextAnnoViz Configuration<br><i>(project specific)</i>"}
+        textannoviz --> tavconf
+    end
+
+    techuser@{ shape: sl-rect, label: "Technical user/machine<br>via a web client"}
+
+    techuser -- "HTTPS + Broccoli API" --> broccoli
+    subgraph middleware
+        textannoviz -- "HTTPS + Broccoli API" --> broccoli
+        broccoli[/"<b>Broccoli</b><br><i>(broker)</i>"/]
+
+        broccoli --> brocconf
+        brocconf@{ shape: doc, label: "Broccoli Configuration<br><i>(project specific)</i>"}
+    end
+
+    textannoviz -. "HTTP(S) + W3C Web Annotation protocol (subset)<br>, STAM text referencing API<br>and/or STAM Query Language<br>" -.-> stamd
+
+    subgraph backend
+
+        stamd[/"<b>stamd</b><br><i>(text and annotation server)</i>"/]
+
+        stamrust@{shape: subproc, label: "stam-rust<br><i>(STAM library)</i>"}
+
+        stamrust --> textframe
+   
+        texts@{ shape: docs, label: "Text files<br><i>(plain text, UTF-8)</i>"}
+        annotations@{ shape: docs, label: "STAM Annotations<br><i>(STAM JSON/CBOR)</i>"}
+        textscans@{ shape: docs, label: "Text Scans<br><i>(image files)</i>"}
+        textframe@{shape: subproc, label: "Textframe<br><i>(text referencing library)</i>"}
+
+
+        cantaloupe[/"<b>Cantaloupe</b><br><i>(IIIF Image server)</i>"/]
+        manifests@{ shape: docs, label: "IIIF Manifests"}
+        cantaloupe --> textscans
+
+        broccoli -- "HTTP(S) + W3C Web Annotation protocol (subset)<br>, STAM text referencing API<br>and/or STAM Query Language<br>" --> stamd
+
+        mirador -- "HTTPS" --> manifest_server
+        mirador -- "HTTPS + IIIF Image API" --> cantaloupe
+
+        manifest_server[/"nginx<br><i>(static manifest server)</i>"/]
+        manifest_server --> manifests
+
+        stamd --> stamrust
+        textframe --> texts
+        stamrust --> annotations
+    end
+
+
+    classDef thirdparty fill:#ccc,color:#111
+    class cantaloupe,mirador,manifest_server,broccoli_elasticclient thirdparty
+
+    linkStyle default background:transparent,color:#009
+```
+
+#### Notes
+
+* There are three major caveats here currently:
+    * The STAM library does not provide a full-text index [yet](https://github.com/annotation/stam-rust/issues/22) and it is not a drop-in replacement for Elastic Search.
+    * The STAM implementation is currently memory-bound, which means all annotations are loaded into memory (which makes it very fast) and this will not scale to huge corpora
+        * The same goes for the texts themselves, but a solution to that is already proposed in this architecture (but not implemented); using textframe in stamd.
+    * The caller logic in Broccoli (or potentially in TextAnnoviz, see next point) would change drastically
+        * The entire middleware layer (the broker) can be omitted entirely if the caller logic is implemented into TextAnnoViz. The dotted line represents this option.
 
 ## 2. Data Conversion Pipelines
 
