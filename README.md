@@ -8,7 +8,6 @@ This is our current Service Oriented Architecture for making available (enriched
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": true},
-    "theme": "default",
     'themeVariables': {
       'edgeLabelBackground': 'transparent'
     }
@@ -86,7 +85,7 @@ flowchart TD
     classDef thirdparty fill:#ccc,color:#111
     class cantaloupe,mongodb,elasticsearch,postgresql,mirador,manifest_server thirdparty
 
-    linkStyle default background:transparent,color:#060
+    linkStyle default background:transparent,color:#009
 ```
 
 #### Legend
@@ -104,7 +103,6 @@ This is our new proposed Service Oriented Architecture for making available (enr
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": true},
-    "theme": "default",
     'themeVariables': {
       'edgeLabelBackground': 'transparent'
     }
@@ -189,7 +187,7 @@ flowchart TD
     classDef thirdparty fill:#ccc,color:#111
     class cantaloupe,mongodb,elasticsearch,postgresql,mirador,manifest_server,broccoli_elasticclient thirdparty
 
-    linkStyle default background:transparent,color:#060
+    linkStyle default background:transparent,color:#009
 ```
 
 #### Notes
@@ -286,7 +284,7 @@ flowchart TD
     classDef abstract color:#f00
     class indexer abstract
 
-    linkStyle default background:transparent,color:#060
+    linkStyle default background:transparent,color:#009
 ```
 
 #### Legend
@@ -346,7 +344,7 @@ flowchart TD
         webanno@{ shape: docs, label: "<b>W3C Web Annotations</b><br><i>Stand-off annotations (JSONL + JSON-LD)</i>"}
     end
 
-    linkStyle default background:transparent,color:#060
+    linkStyle default background:transparent,color:#009
 ```
 
 #### Notes
