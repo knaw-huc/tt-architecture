@@ -1,10 +1,29 @@
 # Team Text - Software Architecture Overview
 
+## Introduction
+
+This document presents the wider architecture developed by [Team
+Text](https://di.huc.knaw.nl/tekstanalyse-nl.html) at the KNAW Humanities
+Cluster. All in-house software mentioned in this documentation can be found via
+<https://tools.huc.knaw.nl>.
+
+The document serves both as an internal reference, as well as a technical show-case to
+external parties.
+
 ## 1. Service Oriented Architecture for Text Collections
+
+We have ample experience publishing diverse scientific text collections. These
+may be literary text editions, historical manuscripts, linguistically-annotated
+collections or large corpora from automatic OCR or Handwritten Text
+Recognition. 
 
 ### 1.1. Current SOA for Text Collections
 
-This is our current Service Oriented Architecture for making available (enriched) Text Collections, it still includes uses of TextRepo.
+This is our current Service Oriented Architecture for making available
+(enriched) Text Collections, it still includes uses of TextRepo.
+[TextAnnoViz](https://github.com/knaw-huc/textannoviz) is the frontend that
+end-users will deal with mostly, via their web browsers, to browse and search
+texts, their original scans and annotations on either.
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": true},
@@ -96,6 +115,10 @@ flowchart TD
 * Rectangles with an extra marked block left and right represent software libraries
 * Third party software is grayed out
 * Project-specific configuration files are not depicted for the backends, but are assumed for all service deployments
+
+#### Notes
+
+* Web annotations produced by this pipeline have custom selectors for TextRepo that are not part of the W3C Web Annotation Data model.
 
 ### 1.2. New proposed SOA for Text Collections 
 
@@ -193,11 +216,15 @@ flowchart TD
 #### Notes
 
 * Kweepeer is not further expanded in this schema, see [https://github.com/knaw-huc/kweepeer/blob/master/README.md#architecture](this schema) for further expansion.
+* Web annotations produced by this pipeline no longer have custom selectors but fully adhere to the standard.
 
 
 ## 2. Data Conversion Pipelines
 
 ### 2.1. Current conversion pipeline for Text Collections
+
+[Text Fabric [Factory]](https://github.com/annotation/text-fabric-factory) and [un-t-ann-gle](https://github.com/knaw-huc/un-t-ann-gle) are used in the Suriano, Translatin, Van Gogh and Mondriaan projects. Untangle is used standlone in Republic (CAF data) and Globalise (PageXML data).
+
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": true}} }%%
@@ -207,6 +234,7 @@ flowchart TD
         direction LR
         teisource@{ shape: docs, label: "Enriched texts<br>(TEI XML)"}
         pagexmlsource@{ shape: docs, label: "Enriched texts<br>(Page XML)"}
+        cafsource@{ shape: docs, label: "Enriched texts<br>(CAF)"}
     end
 
     subgraph conversion
@@ -235,6 +263,9 @@ flowchart TD
 
             webanno@{ shape: docs, label: "<b>W3C Web Annotations</b><br><i>Stand-off annotations (JSONL)</i>"}
             textsegments@{ shape: docs, label: "<b>Text Segments</b><br><i>JSON for Textrepo</i>"}
+
+            pagexmlsource == (in globalise project) ==> untangle
+            cafsource == (in republic project) ==> untangle
 
             untangle ==> textsegments ==> untangle_textrepo_client
             untangle ==> webanno ==> untangle_annorepo_client
@@ -265,11 +296,12 @@ flowchart TD
 
         textrepo -- "Postgresql" --> postgresql
 
+        indexer -- "HTTP(S) POST + ElasticSearch API" --> elasticsearch
+
         subgraph brinta
             elasticsearch[/"ElasticSearch<br><i>(Search engine)</i>"/]
             searchindex[("Text and annotation index<br><i>(for full text text search and faceted annotation search)</i>")]
             elasticsearch --> searchindex
-            indexer -- "HTTP(S) POST + ElasticSearch API" --> elasticsearch
         end
 
         
@@ -292,9 +324,9 @@ flowchart TD
 * Thick lines represent data flow rather than caller direction
 * Node with red text denote abstractions rather than specific software 
 
-### 2.2. Conversion with STAM
+### 2.3. Conversion with STAM
 
-As used in the Brieven van Hooft project (FoLiA source).
+This pipeline with [STAM](https://annotation.github.io/stam) is currently used in the [Brieven van Hooft project](https://github.com/knaw-huc/brieven-van-hooft-pipeline) (with FoLiA source) and also tested for Van Gogh.
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": true}} }%%
@@ -349,4 +381,4 @@ flowchart TD
 
 #### Notes
 
-Ingest is omitted from this schema but follows largely the same as in 2.1. A minimal uploader to annorepo and textrepo/textsurf is used instead of un-t-ann-gle. This can also be omitted entirely if stamd is used directly.
+* Ingest is omitted from this schema but follows largely the same as in 2.1. A minimal uploader to annorepo and textrepo/textsurf is used instead of un-t-ann-gle. This can also be omitted entirely if [stamd](https://github.com/annotation/stamd) is used directly.
