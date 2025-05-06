@@ -6,7 +6,7 @@
 
 This is our current Service Oriented Architecture for making available (enriched) Text Collections, it still includes uses of TextRepo.
 
-```{.mermaid format=svg}
+```mermaid
 %%{init: {"flowchart": {"htmlLabels": true},
     "theme": "default",
     'themeVariables': {
@@ -102,7 +102,7 @@ flowchart TD
 
 This is our new proposed Service Oriented Architecture for making available (enriched) Text Collections, it switches out Textrepo for textsurf and adds a query expansion service (kweepeer).
 
-```{.mermaid format=svg}
+```mermaid
 %%{init: {"flowchart": {"htmlLabels": true},
     "theme": "default",
     'themeVariables': {
@@ -201,7 +201,7 @@ flowchart TD
 
 ### 2.1. Current conversion pipeline for Text Collections
 
-```{.mermaid format=svg}
+```mermaid
 %%{init: {"flowchart": {"htmlLabels": true}} }%%
 flowchart TD
 
@@ -298,7 +298,7 @@ flowchart TD
 
 As used in the Brieven van Hooft project (FoLiA source).
 
-```{.mermaid format=svg}
+```mermaid
 %%{init: {"flowchart": {"htmlLabels": true}} }%%
 flowchart TD
 
