@@ -35,7 +35,7 @@ flowchart TD
         annorepo[/"<b>Annorepo</b><br><i>(web annotation server)</i>"/]
         mongodb[/"MongoDB<br><i>(NoSQL database server)</i>"/]
         annorepo_db[("Annotation Database")]
-        annorepo --> mongodb --> annorepo_db
+        annorepo -- "HTTP + MongoDB Query API" --> mongodb --> annorepo_db
 
         textindex[("Text index")]
         texts@{ shape: database, label: "Text database"}
@@ -46,8 +46,8 @@ flowchart TD
         postgresql[/"Postgresql<br><i>(Database System)</i>"/]
         elasticsearch[/"ElasticSearch<br><i>(Search engine)</i>"/]
 
-        textrepo --> postgresql
-        textrepo --> elasticsearch
+        textrepo -- "Postgresql" --> postgresql
+        broccoli -- "HTTP + ElasticSearch API" --> elasticsearch
 
         elasticsearch --> texts
         postgresql --> textmetadb
@@ -57,15 +57,14 @@ flowchart TD
         cantaloupe[/"<b>Cantaloupe</b><br><i>(IIIF Image server)</i>"/]
         manifests@{ shape: docs, label: "IIIF Manifests"}
         cantaloupe --> textscans
-        cantaloupe --> manifests
-
-
-        sdswitch[/"SD-Switch<br><i>(broker for various<br>structured data services)</i>"/]
 
         broccoli_annorepoclient -- "HTTP + W3C Web Annotation Protocol" --> annorepo
-        broccoli -- "HTTP + IIIF Image API" --> cantaloupe
-        broccoli -- "HTTP" --> sdswitch
         broccoli -- "HTTP + TextRepo API" --> textrepo
+        broccoli -- "HTTP" --> manifest_server
+
+        manifest_server[/"nginx<br><i>(static manifest server)</i>"/]
+        manifest_server --> manifests
+
 
         elasticsearch --> textindex
 
@@ -75,7 +74,7 @@ flowchart TD
 
 
     classDef thirdparty fill:#ccc,color:#111
-    class cantaloupe,mongodb,elasticsearch,postgresql,mirador thirdparty
+    class cantaloupe,mongodb,elasticsearch,postgresql,mirador,manifest_server thirdparty
 ```
 
 **Notes**:
@@ -141,19 +140,19 @@ flowchart TD
         cantaloupe[/"<b>Cantaloupe</b><br><i>(IIIF Image server)</i>"/]
         manifests@{ shape: docs, label: "IIIF Manifests"}
         cantaloupe --> textscans
-        cantaloupe --> manifests
 
         kweepeer[/"<b>Kweepeer</b><br><i>Query Expansion server</i>"/]
 
-        sdswitch[/"SD-Switch<br><i>(broker for various<br>structured data services)</i>"/]
-
+        broccoli -- "HTTP + ElasticSearch API" --> elasticsearch
         broccoli_annorepoclient -- "HTTP + W3C Web Annotation Protocol" --> annorepo
-        broccoli -- "HTTP + IIIF Image API" --> cantaloupe
-        broccoli -- "HTTP" --> sdswitch
         broccoli -- "HTTP + Textsurf API" --> textsurf
         broccoli -- "HTTP + Kweepeer API" --> kweepeer
+        broccoli -- "HTTP" --> manifest_server
 
-        broccoli --> elasticsearch --> textindex
+        manifest_server[/"nginx<br><i>(static manifest server)</i>"/]
+        manifest_server --> manifests
+
+        elasticsearch --> textindex
 
         textsurf --> textframe -->  texts
         textsurf --> texts
@@ -163,7 +162,7 @@ flowchart TD
 
 
     classDef thirdparty fill:#ccc,color:#111
-    class cantaloupe,mongodb,elasticsearch,postgresql,mirador thirdparty
+    class cantaloupe,mongodb,elasticsearch,postgresql,mirador,manifest_server thirdparty
 ```
 
 **Notes:**
