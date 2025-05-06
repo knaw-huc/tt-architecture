@@ -135,6 +135,8 @@ flowchart TD
 
     user@{ shape: sl-rect, label: "End-user (Researcher)<br>in web browser"}
     user -- "HTTPS (UI)" --> textannoviz
+    administrator@{ shape: sl-rect, label: "Administrator<br>in web browser"}
+    administrator -- "HTTPS (UI)" --> annorepodashboard
     subgraph frontend
         textannoviz[/"<b>TextAnnoViz</b><br>(web front-end)"/]
         mirador@{shape: subproc, label: "Mirador<br><i>IIIF Image viewer</i>"}
@@ -144,6 +146,8 @@ flowchart TD
 
         tavconf@{ shape: doc, label: "TextAnnoViz Configuration<br><i>(project specific)</i>"}
         textannoviz --> tavconf
+
+        annorepodashboard[/"<b>AnnoRepo Dashboard</b><br>(administrative front-end)"/]
     end
 
     techuser@{ shape: sl-rect, label: "Technical user/machine<br>via a web client"}
@@ -170,6 +174,7 @@ flowchart TD
         mongodb[/"MongoDB<br><i>(NoSQL database server)</i>"/]
         annorepo_db[("Annotation Database")]
         annorepo --> mongodb --> annorepo_db
+        annorepodashboard --> annorepo
 
         subgraph brinta
             broccoli_elasticclient -- "HTTP(S) + ElasticSearch API" --> elasticsearch
