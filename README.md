@@ -22,7 +22,7 @@ flowchart TD
 
     techuser -- "HTTPS + Broccoli API" --> broccoli
     subgraph middleware
-        textannoviz -- "HTTP + Broccoli API" --> broccoli
+        textannoviz -- "HTTPS + Broccoli API" --> broccoli
         broccoli[/"<b>Broccoli</b><br><i>(broker)</i>"/]
 
         broccoli_annorepoclient@{shape: subproc, label: "annorepo-client"}
@@ -35,51 +35,46 @@ flowchart TD
         annorepo[/"<b>Annorepo</b><br><i>(web annotation server)</i>"/]
         mongodb[/"MongoDB<br><i>(NoSQL database server)</i>"/]
         annorepo_db[("Annotation Database")]
-        annorepo -- "HTTP + MongoDB Query API" --> mongodb --> annorepo_db
+        annorepo -- "HTTP(S) + MongoDB Query API" --> mongodb --> annorepo_db
 
-        textindex[("Text index")]
-        texts@{ shape: database, label: "Text database"}
+        textindex[("Text index<br><i>(for full text text search)</i>")]
+        annotationindex[("Annotation index<br><i>(for faceted search on annotations)</i>")]
+
         textscans@{ shape: docs, label: "Text Scans<br><i>(image files)</i>"}
-        textmetadb@{ shape: database, label: "Text metadata database"}
+        textdb@{ shape: database, label: "Texts (with metadata) database"}
 
         textrepo[/"<b>Textrepo</b><br><i>(text server)</i>"/]
         postgresql[/"Postgresql<br><i>(Database System)</i>"/]
         elasticsearch[/"ElasticSearch<br><i>(Search engine)</i>"/]
 
         textrepo -- "Postgresql" --> postgresql
-        broccoli -- "HTTP + ElasticSearch API" --> elasticsearch
+        broccoli -- "HTTP(S) + ElasticSearch API" --> elasticsearch
 
-        elasticsearch --> texts
-        postgresql --> textmetadb
-
-
+        postgresql --> textdb
 
         cantaloupe[/"<b>Cantaloupe</b><br><i>(IIIF Image server)</i>"/]
         manifests@{ shape: docs, label: "IIIF Manifests"}
         cantaloupe --> textscans
 
-        broccoli_annorepoclient -- "HTTP + W3C Web Annotation Protocol" --> annorepo
-        broccoli -- "HTTP + TextRepo API" --> textrepo
-        broccoli -- "HTTP" --> manifest_server
+        broccoli_annorepoclient -- "HTTP(S) + W3C Web Annotation Protocol" --> annorepo
+        broccoli -- "HTTP(S) + TextRepo API" --> textrepo
 
         manifest_server[/"nginx<br><i>(static manifest server)</i>"/]
         manifest_server --> manifests
 
 
         elasticsearch --> textindex
+        elasticsearch --> annotationindex
 
 
         mirador -- "HTTPS + IIIF Image API" --> cantaloupe
+        mirador -- "HTTPS" --> manifest_server
     end
 
 
     classDef thirdparty fill:#ccc,color:#111
     class cantaloupe,mongodb,elasticsearch,postgresql,mirador,manifest_server thirdparty
 ```
-
-**Notes**:
-
-* SD-Switch is not further expanded here because I have no idea what it actually serves
 
 ### Legend:
 
@@ -111,13 +106,14 @@ flowchart TD
 
     techuser -- "HTTPS + Broccoli API" --> broccoli
     subgraph middleware
-        textannoviz -- "HTTP + Broccoli API" --> broccoli
+        textannoviz -- "HTTPS + Broccoli API" --> broccoli
         broccoli[/"<b>Broccoli</b><br><i>(broker)</i>"/]
 
         broccoli_annorepoclient@{shape: subproc, label: "annorepo-client"}
+        broccoli_elasticclient@{shape: subproc, label: "elasticsearch-java<br><i>(client)</i>"}
         broccoli --> broccoli_annorepoclient 
+        broccoli --> broccoli_elasticclient 
 
-        kweepeerfrontend --> broccoli
     end
 
 
@@ -129,7 +125,9 @@ flowchart TD
         annorepo --> mongodb --> annorepo_db
 
         elasticsearch[/"ElasticSearch<br><i>(Search engine)</i>"/]
-        textindex[("Text index")]
+        textindex[("Text index<br><i>(for full text text search)</i>")]
+        annotationindex[("Annotation index<br><i>(for faceted search on annotations)</i>")]
+
         texts@{ shape: docs, label: "Text files<br><i>(plain text, UTF-8)</i>"}
         textscans@{ shape: docs, label: "Text Scans<br><i>(image files)</i>"}
 
@@ -143,26 +141,28 @@ flowchart TD
 
         kweepeer[/"<b>Kweepeer</b><br><i>Query Expansion server</i>"/]
 
-        broccoli -- "HTTP + ElasticSearch API" --> elasticsearch
-        broccoli_annorepoclient -- "HTTP + W3C Web Annotation Protocol" --> annorepo
-        broccoli -- "HTTP + Textsurf API" --> textsurf
-        broccoli -- "HTTP + Kweepeer API" --> kweepeer
-        broccoli -- "HTTP" --> manifest_server
+        broccoli_annorepoclient -- "HTTP(S) + W3C Web Annotation Protocol" --> annorepo
+        broccoli_elasticclient -- "HTTP(S) + ElasticSearch API" --> elasticsearch
+        broccoli -- "HTTP(S) + Textsurf API" --> textsurf
+
+        mirador -- "HTTPS" --> manifest_server
+        mirador -- "HTTPS + IIIF Image API" --> cantaloupe
+
+        kweepeerfrontend -- "HTTP(S) + Kweepeer API" --> kweepeer
 
         manifest_server[/"nginx<br><i>(static manifest server)</i>"/]
         manifest_server --> manifests
 
         elasticsearch --> textindex
+        elasticsearch --> annotationindex
 
         textsurf --> textframe -->  texts
         textsurf --> texts
-
-        mirador -- "HTTPS + IIIF Image API" --> cantaloupe
     end
 
 
     classDef thirdparty fill:#ccc,color:#111
-    class cantaloupe,mongodb,elasticsearch,postgresql,mirador,manifest_server thirdparty
+    class cantaloupe,mongodb,elasticsearch,postgresql,mirador,manifest_server,broccoli_elasticclient thirdparty
 ```
 
 **Notes:**
