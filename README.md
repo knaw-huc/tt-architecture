@@ -52,7 +52,7 @@ flowchart TD
         textannoviz -- "HTTPS + Broccoli API" --> broccoli
         broccoli[/"<b>Broccoli</b><br><i>(broker)</i>"/]
 
-        broccoli_annorepoclient@{shape: subproc, label: "annorepo-client"}
+        broccoli_annorepoclient@{shape: subproc, label: "annorepo-client (java)"}
         broccoli --> broccoli_annorepoclient 
 
         broccoli --> brocconf
@@ -157,7 +157,7 @@ flowchart TD
         textannoviz -- "HTTPS + Broccoli API" --> broccoli
         broccoli[/"<b>Broccoli</b><br><i>(broker)</i>"/]
 
-        broccoli_annorepoclient@{shape: subproc, label: "annorepo-client"}
+        broccoli_annorepoclient@{shape: subproc, label: "annorepo-client (java)"}
         broccoli_elasticclient@{shape: subproc, label: "elasticsearch-java<br><i>(client)</i>"}
         broccoli --> broccoli_annorepoclient 
         broccoli --> broccoli_elasticclient 
@@ -325,11 +325,11 @@ flowchart TD
         cafsource@{ shape: docs, label: "Enriched texts<br>(CAF)"}
     end
 
-    user@{ shape: sl-rect, label: "End-user (Data mananager)<br>in web browser"}
+    user@{ shape: sl-rect, label: "End-user (Data manager)<br>in web browser"}
     user -- "HTTPS (UI)" --> peen
 
     subgraph frontend
-        peen[/"Editem Preview Workflow (PEEN)"/]
+        peen[/"<b>Preview Editor's ENvironment</b> (PEEN)"/]
     end
 
     subgraph conversion
@@ -356,19 +356,21 @@ flowchart TD
             tff_fromxml ==> tfdata
             tfdata ==> tff_iiif ==> manifests
             tfdata ==> tff_watm ==> watm
-            manifests@{ shape: docs, label: "IIIF manifests"}
+            manifests@{ shape: docs, label: "IIIF manifests<br>(to be served statically)"}
         end 
 
         with_textfabric_factory ~~~ editem_apparatus
         peen --> editem_apparatus
         teisource ==> editem_apparatus
         editem_apparatus["editem-apparatus<br><i>(Extract structured data from apparatus TEI)</i>"]
+        apparatus_json@{ shape: docs, label: "Apparatus data (JSON)<br><i>(to be served statically)</i>"}
+        editem_apparatus ==> apparatus_json
         peen --> with_untanngle
 
         subgraph with_untanngle["With un-t-ann-gle"]
             direction TB
             watm ==> untanngle_tf
-            untanngle_tf["<b>untanngle.tf</b><br><i>Create texts and web annotations from WATM/TF joined data.</i>"]
+            untanngle_tf["<b>untanngle.tf</b><br><i>(Create texts and web annotations from WATM/TF joined data)</i>"]
             untanngle_tf ==> untanngle_uploader
 
             untanngle_conversion["<b>un-t-ann-gle</b><br><i>(Project specific conversion pipelines to create texts and webannotations from joined data)</i>>"]
@@ -376,13 +378,13 @@ flowchart TD
             cafsource == (in republic project) ==> untanngle_conversion
             untanngle_conversion ==> untanngle_uploader
 
-            untanngle_uploader["<b>un-t-ann-gle uploader</b><br><i>Generic uploader for annorepo/textrepo.</i>"]
+            untanngle_uploader["<b>un-t-ann-gle uploader</b><br><i>(Generic uploader for annorepo/textrepo)</i>"]
 
-            untanngle_annorepo_client@{shape: subproc, label: "annorepo-client"}
-            untanngle_textrepo_client@{shape: subproc, label: "textrepo-client"}
+            untanngle_annorepo_client@{shape: subproc, label: "annorepo-client (python)"}
+            untanngle_textrepo_client@{shape: subproc, label: "textrepo-client (python)"}
 
-            webanno@{ shape: docs, label: "<b>W3C Web Annotations</b><br><i>Stand-off annotations (JSONL)</i>"}
-            textsegments@{ shape: docs, label: "<b>Text Segments</b><br><i>JSON for Textrepo</i>"}
+            webanno@{ shape: docs, label: "<b>W3C Web Annotations</b><br><i>(Stand-off annotations, JSONL)</i>"}
+            textsegments@{ shape: docs, label: "<b>Text Segments</b><br><i>(JSON for Textrepo)</i>"}
 
 
             untanngle_uploader ==> textsegments ==> untanngle_textrepo_client
@@ -445,7 +447,7 @@ flowchart TD
 
 ### 2.3. Conversion with STAM
 
-This pipeline with [STAM](https://annotation.github.io/stam) is currently used in the [Brieven van Hooft project](https://github.com/knaw-huc/brieven-van-hooft-pipeline) (with FoLiA source) and also tested for Van Gogh.
+This pipeline with [STAM](https://annotation.github.io/stam) is currently used in the [Brieven van Hooft project](https://github.com/knaw-huc/brieven-van-hooft-pipeline) (with FoLiA source) and also tested for Van Gogh. This pipeline does not have scans.
 
 ```mermaid
 %%{init: {"flowchart": {"htmlLabels": true}} }%%
@@ -457,6 +459,9 @@ flowchart TD
         foliasource@{ shape: docs, label: "Enriched texts<br>(FoLiA XML)"}
         pagexmlsource@{ shape: docs, label: "Enriched texts<br>(Page XML)"}
     end
+
+    techuser@{ shape: sl-rect, label: "Technical user<br>(command-line)"}
+    techuser --> conversion
 
     subgraph conversion
         direction LR
@@ -495,9 +500,54 @@ flowchart TD
         webanno@{ shape: docs, label: "<b>W3C Web Annotations</b><br><i>Stand-off annotations (JSONL + JSON-LD)</i>"}
     end
 
+    subgraph ingest
+        direction TB
+
+        texts ==> uploader
+        webanno ==> uploader
+        uploader["Uploader<br><i>(Simple project-specific uploader script, python)</i>"]
+        uploader --> uploader_annorepo_client
+        uploader --> uploader_textrepo_client
+
+        uploader_annorepo_client[["annorepo-client (python)"]]
+        uploader_textrepo_client[["textrepo-client (python)"]]
+
+        uploader_annorepo_client -- "HTTPS POST/PUT + W3C Web Annotation Protocol" --> annorepo
+        uploader_textrepo_client -- "HTTPS POST/PUT + TextRepo API" --> textrepo
+
+        annorepo[/"<b>Annorepo</b><br><i>(web annotation server)</i>"/]
+        mongodb[/"MongoDB<br><i>(NoSQL database server)</i>"/]
+        annorepo_db[("Annotation Database")]
+        annorepo --> mongodb --> annorepo_db
+
+
+        indexer["<b>Indexer</b><br><i>(project-specific, multiple implementations exist)</i>"]
+
+        indexer -- "HTTP(S) GET" --> annorepo
+        indexer -- "HTTP(S) GET" --> textrepo
+
+        textrepo[/"<b>Textrepo</b><br><i>(text server)</i>"/]
+        postgresql[/"Postgresql<br><i>(Database System)</i>"/]
+
+        textrepo -- "Postgresql" --> postgresql
+
+        indexer -- "HTTP(S) POST + ElasticSearch API" --> elasticsearch
+
+        subgraph brinta
+            elasticsearch[/"ElasticSearch<br><i>(Search engine)</i>"/]
+            searchindex[("Text and annotation index<br><i>(for full text text search and faceted annotation search)</i>")]
+            elasticsearch --> searchindex
+        end
+
+        uploader -. "(manually invoked afterwards)" -.-> indexer
+
+        
+    end
+
+
     linkStyle default background:transparent,color:#009
 ```
 
 #### Notes
 
-* Ingest is omitted from this schema but follows largely the same as in 2.1. A minimal uploader to annorepo and textrepo/textsurf is used instead of un-t-ann-gle. This can also be omitted entirely if [stamd](https://github.com/annotation/stamd) is used directly.
+* TextRepo may be substituted with TextSurf in the future
