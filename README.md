@@ -325,45 +325,75 @@ flowchart TD
         cafsource@{ shape: docs, label: "Enriched texts<br>(CAF)"}
     end
 
+    user@{ shape: sl-rect, label: "End-user (Data mananager)<br>in web browser"}
+    user -- "HTTPS (UI)" --> peen
+
+    subgraph frontend
+        peen[/"Editem Preview Workflow (PEEN)"/]
+    end
+
     subgraph conversion
         direction TB
 
+        peen --> with_textfabric_factory
+
         subgraph with_textfabric_factory["With Text Fabric Factory (Python API)"]
             direction TB
-            teisource ==> tff_fromtei
+            teisource ==> tff_fromtei_validation
             pagexmlsource ==> tff_fromxml
-            tff_fromtei["tff.convert.tei"]
+            tff_fromtei_validation["tff.convert.tei<br><i>(Validation step)</i>"]
+            tff_fromtei_validation ==> tff_fromtei_conversion
+            tff_fromtei_conversion["tff.convert.tei<br><i>(Conversion step, from TEI to TF)</i>"]
+
+
+            tff_iiif["tff.convert.iiif<br><i>(IIIF Manifest generation)</i>"]
+
             tff_fromxml["tff.convert.xml"]
-            tfdata@{ shape: docs, label: "Text Fabric Data"}
-            tff_watm["tff.convert.watm"]
+            tfdata@{ shape: docs, label: "<b>Text Fabric Data</b>"}
+            tff_watm["tff.convert.watm<br><i>(Conversion step)</i>"]
             watm@{ shape: docs, label: "WATM (Web Annotation Text Model)<br><i>(internal intermediary representation)</i>"}
-            tff_fromtei ==> tfdata 
+            tff_fromtei_conversion ==> tfdata 
             tff_fromxml ==> tfdata
+            tfdata ==> tff_iiif ==> manifests
             tfdata ==> tff_watm ==> watm
+            manifests@{ shape: docs, label: "IIIF manifests"}
         end 
 
-        subgraph with_untangle["With un-t-ann-gle"]
+        with_textfabric_factory ~~~ editem_apparatus
+        peen --> editem_apparatus
+        teisource ==> editem_apparatus
+        editem_apparatus["editem-apparatus<br><i>(Extract structured data from apparatus TEI)</i>"]
+        peen --> with_untanngle
+
+        subgraph with_untanngle["With un-t-ann-gle"]
             direction TB
-            watm ==> untangle
-            untangle["<b>un-t-ann-gle</b><br><i>Project-specific conversion pipelines to create texts and web annotations from joined data. Generic uploader for annorepo/textrepo.</i>"]
-            untangle_annorepo_client@{shape: subproc, label: "annorepo-client"}
-            untangle_textrepo_client@{shape: subproc, label: "textrepo-client"}
+            watm ==> untanngle_tf
+            untanngle_tf["<b>untanngle.tf</b><br><i>Create texts and web annotations from WATM/TF joined data.</i>"]
+            untanngle_tf ==> untanngle_uploader
+
+            untanngle_conversion["<b>un-t-ann-gle</b><br><i>(Project specific conversion pipelines to create texts and webannotations from joined data)</i>>"]
+            pagexmlsource == (in globalise project) ==> untanngle_conversion
+            cafsource == (in republic project) ==> untanngle_conversion
+            untanngle_conversion ==> untanngle_uploader
+
+            untanngle_uploader["<b>un-t-ann-gle uploader</b><br><i>Generic uploader for annorepo/textrepo.</i>"]
+
+            untanngle_annorepo_client@{shape: subproc, label: "annorepo-client"}
+            untanngle_textrepo_client@{shape: subproc, label: "textrepo-client"}
 
             webanno@{ shape: docs, label: "<b>W3C Web Annotations</b><br><i>Stand-off annotations (JSONL)</i>"}
             textsegments@{ shape: docs, label: "<b>Text Segments</b><br><i>JSON for Textrepo</i>"}
 
-            pagexmlsource == (in globalise project) ==> untangle
-            cafsource == (in republic project) ==> untangle
 
-            untangle ==> textsegments ==> untangle_textrepo_client
-            untangle ==> webanno ==> untangle_annorepo_client
+            untanngle_uploader ==> textsegments ==> untanngle_textrepo_client
+            untanngle_uploader ==> webanno ==> untanngle_annorepo_client
         end
     end
 
     subgraph ingest
         direction TB
-        untangle_annorepo_client -- "HTTPS POST/PUT + W3C Web Annotation Protocol" --> annorepo
-        untangle_textrepo_client -- "HTTPS POST/PUT + TextRepo API" --> textrepo
+        untanngle_annorepo_client -- "HTTPS POST/PUT + W3C Web Annotation Protocol" --> annorepo
+        untanngle_textrepo_client -- "HTTPS POST/PUT + TextRepo API" --> textrepo
 
         techuser@{ shape: sl-rect, label: "Technical user/machine<br>via a web client"}
         techuser --> indexer
@@ -374,8 +404,9 @@ flowchart TD
         annorepo --> mongodb --> annorepo_db
 
 
-        indexer[/"<b>Indexer</b><br><i>(project-specific, multiple implementations exist)</i>"/]
+        indexer["<b>Indexer</b><br><i>(project-specific, multiple implementations exist)</i>"]
 
+        peen --> indexer
         indexer -- "HTTP(S) GET" --> annorepo
         indexer -- "HTTP(S) GET" --> textrepo
 
@@ -432,7 +463,7 @@ flowchart TD
         subgraph with_folia_tools["with FoLiA-tools (CLI)"]
             direction TB
             foliasource ==> folia2stam
-            folia2stam["folia2stam<br><i>untangles FoLiA XML to STAM</i>"]
+            folia2stam["folia2stam<br><i>converts/untangles FoLiA XML to STAM</i>"]
         end
 
         subgraph with_stam_tools["with stam-tools (CLI)"]
@@ -440,7 +471,7 @@ flowchart TD
             stam_xmlconfig@{ shape: docs, label: "XML Format Configuration<br><i>(XML format specifications, <br>e.g. for TEI)</i>"}
             stam_xmlconfig ==> stam_fromxml
 
-            stam_fromxml["stam fromxml<br><i>untangles XML to STAM</i>"] 
+            stam_fromxml["stam fromxml<br><i>converts/untangles XML to STAM</i>"] 
             stam_webanno["stam webanno<br><i>Conversion to W3C Web Annotations</i>"]
             stam_annotations@{ shape: docs, label: "<b>STAM Annotations</b><br><i>(stand-off annotations with references to texts<br>STAM JSON/CSV/CBOR or non-serialised in memory)</i>"}
             teisource ==> stam_fromxml
