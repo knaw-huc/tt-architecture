@@ -554,7 +554,16 @@ flowchart TD
 
 ## 3. Data Enrichment pipelines
 
-Most data enrichment pipelines are documented (including schemas) elsewhere:
+Most data enrichment pipelines are documented elsewhere (direct links to schemas or READMEs/documentation with schemas):
+:
 
 * [Globalise Language Detection pipeline](https://github.com/knaw-huc/globalise-tools/blob/main/pipelines/langdetect/)
 * [Globalise Query Expansion pipeline (kweepeer)](https://github.com/knaw-huc/kweepeer)
+
+## 4. Data Models
+
+Data models can be found elsewhere as well (direct links to schemas or READMEs/documentation with schemas):
+
+* [STAM](https://github.com/annotation/stam)
+* [Text Fabric](https://annotation.github.io/text-fabric/tf/about/datamodel.html)
+* [FoLiA](https://github.com/proycon/folia)
