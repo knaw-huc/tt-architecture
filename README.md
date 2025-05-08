@@ -551,3 +551,10 @@ flowchart TD
 #### Notes
 
 * TextRepo may be substituted with TextSurf in the future
+
+## 3. Data Enrichment pipelines
+
+Most data enrichment pipelines are documented (including schemas) elsewhere:
+
+* [Globalise Language Detection pipeline](https://github.com/knaw-huc/globalise-tools/blob/main/pipelines/langdetect/)
+* [Globalise Query Expansion pipeline (kweepeer)](https://github.com/knaw-huc/kweepeer)
