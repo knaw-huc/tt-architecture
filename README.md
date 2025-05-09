@@ -37,9 +37,6 @@ flowchart TD
     user@{ shape: sl-rect, label: "End-user (Researcher)<br>in web browser"}
     user -- "HTTPS (UI)" --> textannoviz
     subgraph frontend
-        tavconf@{ shape: doc, label: "TextAnnoViz Configuration<br><i>(project specific)</i>"}
-        textannoviz --> tavconf
-
         textannoviz[/"<b>TextAnnoViz</b><br>(web front-end)"/]
         mirador@{shape: subproc, label: "Mirador<br><i>IIIF Image viewer</i>"}
         textannoviz --> mirador
@@ -54,9 +51,6 @@ flowchart TD
 
         broccoli_annorepoclient@{shape: subproc, label: "annorepo-client (java)"}
         broccoli --> broccoli_annorepoclient 
-
-        broccoli --> brocconf
-        brocconf@{ shape: doc, label: "Broccoli Configuration<br><i>(project specific)</i>"}
     end
 
 
@@ -114,7 +108,7 @@ flowchart TD
 * Parallelograms represent networked processes (i.e. services).
 * Rectangles with an extra marked block left and right represent software libraries
 * Third party software is grayed out
-* Project-specific configuration files are not depicted for the backends, but are assumed for all service deployments
+* All components (in any of frontend, middleware, and backend) are configurable via external configuration files. These are not explicitly drawn in the schema.
 
 #### Notes
 
@@ -135,8 +129,7 @@ flowchart TD
 
     user@{ shape: sl-rect, label: "End-user (Researcher)<br>in web browser"}
     user -- "HTTPS (UI)" --> textannoviz
-    administrator@{ shape: sl-rect, label: "Administrator<br>in web browser"}
-    administrator -- "HTTPS (UI)" --> annorepodashboard
+    user -- "HTTPS (UI)" --> annorepodashboard
     subgraph frontend
         textannoviz[/"<b>TextAnnoViz</b><br>(web front-end)"/]
         mirador@{shape: subproc, label: "Mirador<br><i>IIIF Image viewer</i>"}
@@ -144,10 +137,7 @@ flowchart TD
         textannoviz --> mirador
         textannoviz --> kweepeerfrontend
 
-        tavconf@{ shape: doc, label: "TextAnnoViz Configuration<br><i>(project specific)</i>"}
-        textannoviz --> tavconf
-
-        annorepodashboard[/"<b>AnnoRepo Dashboard</b><br>(administrative front-end)"/]
+        annorepodashboard[/"<b>AnnoRepo Dashboard</b><br>(explorative and administrative front-end for annotations)"/]
     end
 
     techuser@{ shape: sl-rect, label: "Technical user/machine<br>via a web client"}
@@ -161,10 +151,6 @@ flowchart TD
         broccoli_elasticclient@{shape: subproc, label: "elasticsearch-java<br><i>(client)</i>"}
         broccoli --> broccoli_annorepoclient 
         broccoli --> broccoli_elasticclient 
-
-        broccoli --> brocconf
-        brocconf@{ shape: doc, label: "Broccoli Configuration<br><i>(project specific)</i>"}
-
     end
 
 
@@ -222,6 +208,7 @@ flowchart TD
 
 * Kweepeer is not further expanded in this schema, see [https://github.com/knaw-huc/kweepeer/blob/master/README.md#architecture](this schema) for further expansion.
 * Web annotations produced by this pipeline no longer have custom selectors but fully adhere to the standard.
+* All components (in any of frontend, middleware, and backend) are configurable via external configuration files. These are not explicitly drawn in the schema.
 
 ### 1.3. Potential SOA for Text Collections with STAM
 
