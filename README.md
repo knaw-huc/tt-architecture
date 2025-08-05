@@ -601,7 +601,6 @@ flowchart TD
         webanno ==> uploader
         uploader["Uploader<br><i>(Simple project-specific uploader script, python)</i>"]
         uploader --> uploader_annorepo_client
-        uploader --> uploader_textrepo_client
 
         uploader_annorepo_client[["annorepo-client (python)"]]
 
