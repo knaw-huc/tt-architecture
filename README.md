@@ -537,7 +537,110 @@ flowchart TD
 
 #### Notes
 
-* TextRepo may be substituted with TextSurf in the future
+* TextRepo may be substituted with TextSurf in the future, as shown in 2.4
+
+### 2.4. Future conversion pipeline
+
+This is similar to the pipeline with [STAM](https://annotation.github.io/stam) above.
+
+```mermaid
+%%{init: {"flowchart": {"htmlLabels": true}} }%%
+flowchart TD
+
+    subgraph sources["Sources (pick one)"]
+        direction LR
+        teisource@{ shape: docs, label: "Enriched texts<br>(TEI XML)"}
+        foliasource@{ shape: docs, label: "Enriched texts<br>(FoLiA XML)"}
+        pagexmlsource@{ shape: docs, label: "Enriched texts<br>(Page XML)"}
+    end
+
+    techuser@{ shape: sl-rect, label: "Technical user<br>(command-line)"}
+    techuser --> conversion
+
+    subgraph conversion
+        direction LR
+        subgraph with_folia_tools["with FoLiA-tools (CLI)"]
+            direction TB
+            foliasource ==> folia2stam
+            folia2stam["folia2stam<br><i>converts/untangles FoLiA XML to STAM</i>"]
+        end
+
+        subgraph with_stam_tools["with stam-tools (CLI)"]
+            direction TB
+            stam_xmlconfig@{ shape: docs, label: "XML Format Configuration<br><i>(XML format specifications, <br>e.g. for TEI)</i>"}
+            stam_xmlconfig ==> stam_fromxml
+
+            stam_fromxml["stam fromxml<br><i>converts/untangles XML to STAM</i>"] 
+            stam_webanno["stam webanno<br><i>Conversion to W3C Web Annotations</i>"]
+            stam_annotations@{ shape: docs, label: "<b>STAM Annotations</b><br><i>(stand-off annotations with references to texts<br>STAM JSON/CSV/CBOR or non-serialised in memory)</i>"}
+            teisource ==> stam_fromxml
+            pagexmlsource ==> stam_fromxml
+            folia2stam ==> stam_annotations
+            stam_fromxml ==> stam_annotations
+            stam_annotations ==> stam_webanno
+        end
+    end
+
+
+    subgraph targets
+        direction LR
+
+        folia2stam ==> texts
+        stam_fromxml ==> texts
+        
+        stam_webanno ==> webanno
+
+        texts@{ shape: docs, label: "<b>Texts</b><br><i>Plain texts (UTF-8)</i>"}
+        webanno@{ shape: docs, label: "<b>W3C Web Annotations</b><br><i>Stand-off annotations (JSONL + JSON-LD)</i>"}
+    end
+
+    subgraph ingest
+        direction TB
+
+        texts ==> uploader
+        webanno ==> uploader
+        uploader["Uploader<br><i>(Simple project-specific uploader script, python)</i>"]
+        uploader --> uploader_annorepo_client
+        uploader --> uploader_textrepo_client
+
+        uploader_annorepo_client[["annorepo-client (python)"]]
+
+        uploader_annorepo_client -- "HTTPS POST/PUT + W3C Web Annotation Protocol" --> annorepo
+        uploader -- "rsync" --> textsurf
+
+        annorepo[/"<b>Annorepo</b><br><i>(web annotation server)</i>"/]
+        mongodb[/"MongoDB<br><i>(NoSQL database server)</i>"/]
+        annorepo_db[("Annotation Database")]
+        annorepo --> mongodb --> annorepo_db
+
+
+        indexer["<b>Indexer</b><br><i>(project-specific, multiple implementations exist)</i>"]
+
+        indexer -- "HTTP(S) GET" --> annorepo
+        indexer -- "HTTP(S) GET" --> textrepo
+
+        textsurf[/"<b>Textsurf</b><br><i>(text server)</i>"/]
+
+        indexer -- "HTTP(S) POST + ElasticSearch API" --> elasticsearch
+
+        subgraph brinta
+            elasticsearch[/"ElasticSearch<br><i>(Search engine)</i>"/]
+            searchindex[("Text and annotation index<br><i>(for full text text search and faceted annotation search)</i>")]
+            elasticsearch --> searchindex
+        end
+
+        uploader -. "(manually invoked afterwards)" -.-> indexer
+
+        
+    end
+
+
+    linkStyle default background:transparent,color:#009
+```
+
+#### Notes
+
+* TODO: Integrate PEEN into this schema
 
 ## 3. Data Enrichment pipelines
 
