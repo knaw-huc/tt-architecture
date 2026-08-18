@@ -8,40 +8,89 @@ documentation can be found via <a href="https://tools.huc.knaw.nl"
 class="uri">https://tools.huc.knaw.nl</a>.</p>
 <p>The document serves both as an internal reference, as well as a
 technical show-case to external parties.</p>
-<h2 id="service-oriented-architecture-for-text-collections">1. Service
-Oriented Architecture for Text Collections</h2>
+<h2 id="design-philosophy">Design Philosophy</h2>
+<ul>
+<li><strong>Reproducibility</strong> - Use the original sources and
+allow going from zero to full end-results without human intervention.
+Also support live/incremental updates.</li>
+<li><strong>Flexibility</strong> - Flexibly accommodate heterogeneous
+data sources; upstream projects use different formats and different
+vocabularies.</li>
+<li><strong>Uniformisation</strong> - Data from distinct sources and
+projects is transformed into a more uniform vocabulary that our tools
+understand</li>
+<li><strong>Service-oriented</strong> - A multi-component service
+oriented architecture with a web-based user frontend.</li>
+<li><strong>Scalability</strong> - Handle both small corpora as well as
+large ones, allow running on a local system (e.g. in development) as
+well as distributed on a kubernetes cluster for production
+scenarios.</li>
+<li><strong>Modularity &amp; Interoperability</strong> - Distinct
+interoperable software components with clearly distinct functions, no
+one-serve-all monoliths. Components may be interchangeable for others
+where appropriate.</li>
+<li><strong>Reusability</strong> - Components are reusable in other
+contexts; existing components (incl 3rd party components) are (re)used
+where applicable.</li>
+<li><strong>Simplicity</strong> - Though the resulting pipeline is
+complex, the individual components and their connections retain a
+certain simplicity. Complexity and abstraction should only be introduced
+for a good reason.</li>
+</ul>
+<h2
+id="service-oriented-architecture-and-data-pipeline-for-text-collections">Service
+Oriented Architecture and Data pipeline for Text Collections</h2>
 <p>We have ample experience publishing diverse scientific text
 collections. These may be literary text editions, historical
 manuscripts, linguistically-annotated collections or large corpora from
 automatic OCR or Handwritten Text Recognition.</p>
+<p>A data processing pipeline takes the original corpus in the form
+prepared by the editors, this may be TEI XML, PageXML, FoLiA XML or
+other formats.</p>
+<p>We distinguish the following stages in our pipeline, they are
+schematically shown below:</p>
+<ol type="1">
+<li><strong>Validation</strong> - Validated the corpus as delivered by
+the editors.</li>
+<li><strong>Conversion</strong> - Converts the corpus to plain text and
+stand-off W3C Web Annotations (radical standoff, via STAM)
+<ul>
+<li>Standardised linked-open-data vocabulary</li>
+<li>Text Normalisation (e.g. hyphenation), <em>support for multiple text
+representations</em></li>
+<li>Apparatus Conversion</li>
+<li>IIIF Manifest Generation</li>
+</ul></li>
+<li><strong>Ingest</strong> - Loads the generated artifacts (plain text,
+annotations, images) into their respective services</li>
+</ol>
+<p>The pipeline itself is driven by GNU Make and can be automatically
+invoked from CI/CD pipelines.</p>
 <figure>
 <img src="artifacts/architecture.png"
 alt="Data Processing and Service Architecture" />
 <figcaption aria-hidden="true">Data Processing and Service
 Architecture</figcaption>
 </figure>
-<h2 id="data-enrichment-pipelines">3. Data Enrichment pipelines</h2>
-<dl>
-<dt>Most data enrichment pipelines are documented elsewhere (direct
-links to schemas or READMEs/documentation with schemas):</dt>
-<dd>
-
-</dd>
-</dl>
+<h3 id="legend">Legend</h3>
 <ul>
-<li><a
-href="https://github.com/knaw-huc/globalise-tools/blob/main/pipelines/langdetect/">Globalise
-Language Detection pipeline</a></li>
-<li><a href="https://github.com/knaw-huc/kweepeer">Globalise Query
-Expansion pipeline (kweepeer)</a></li>
+<li>Data is shown in yellow</li>
+<li>Processing software is shown in green squares</li>
+<li>Software Services are shown in purple parallelograms</li>
+<li>Communication protocols are shown as arrow labels</li>
+<li>Lines represent the data/provisioning flow</li>
+<li>Software marked with an asterisk is third-party software, all others
+are developed in-house.</li>
+<li>Tools in the data pipeline are mentioned by their command-line
+invocations, if they are packaged as a part of a larger suite of tools,
+that name is between square brackets</li>
+<li>The make targets are given where applicable</li>
 </ul>
-<h2 id="data-models">4. Data Models</h2>
+<h2 id="data-models">Data Models</h2>
 <p>Data models can be found elsewhere as well (direct links to schemas
 or READMEs/documentation with schemas):</p>
 <ul>
 <li><a href="https://github.com/annotation/stam">STAM</a></li>
-<li><a
-href="https://annotation.github.io/text-fabric/tf/about/datamodel.html">Text
-Fabric</a></li>
-<li><a href="https://github.com/proycon/folia">FoLiA</a></li>
+<li><a href="https://ns.huc.knaw.nl/text_intro.html">Text &amp;
+Annotation Vocabulary</a></li>
 </ul>
