@@ -1,0 +1,142 @@
+%%{init: {"flowchart": {"htmlLabels": true}} }%%
+flowchart TD
+    tei@{ shape: docs, label: "<tt>tei/*.xml</tt><br><strong>Source documents</strong> (TEI XML)" }
+    scans@{ shape: docs, label: "<tt>data/scans/</tt><br><strong>Scans</strong><br><tt>make scans</tt>" }
+    scan_metadata@{ shape: docs, label: "<tt>data/scans/*.tsv</tt><br><strong>Scan Metadata</strong><br><tt>make scans</tt>" }
+
+    subgraph validation
+        validate_tei["<tt>validate-tei [text-info]</tt><br><strong>TEI Validation</strong>"]
+        tei_info@{ shape: docs, label: "<tt>tei_info/</tt><br><strong>Validation reports</strong><br><tt>make validate</tt>" }
+        tei ==> validate_tei ==> tei_info
+    end
+
+    subgraph conversion
+        stam_xmlconfig@{ shape: doc, label: "<tt>etc/stam/fromxml/tei.toml</tt><br><strong>TEI XML to STAM Mapping</strong>"}
+        tei ==> stam_fromxml
+        stam_xmlconfig ==> stam_fromxml
+
+        stam@{ shape: docs, label: "<tt>work/*.stam.json</tt><br><strong>Stand-off Annotations</strong> (STAM)<br><tt>make stam</tt>" }
+        texts@{ shape: docs, label: "<tt>work/*.txt</tt><br><strong>Plain texts</strong><br><tt>make stam</tt>"}
+
+        stam_fromxml["<tt>stam fromxml [stam-tools]</tt><br><strong>XML to STAM conversion</strong><br><i>(aka untangling)</i>"]
+        stam_translatetextconfig@{ shape: doc, label: "<tt>etc/stam/translatetext/norm.toml</tt><br><strong>Normalisation rules</strong>"}
+        stam_translatetext["<tt>stam translatetext [stam-tools]</tt><br><strong>Text normalisation</strong>"]
+        stam_translate["<tt>stam translate [stam-tools]</tt><br><strong>Copy annotations to normalised text</strong> (if applicable)"]
+
+        stam_translatetextconfig ==> stam_translatetext
+        stam_fromxml ==> stam_translatetext ==> stam_translate
+
+        stam_translate ==> stam
+
+        stam_fromxml ==> texts
+        stam_translatetext ==> texts
+
+        stam ==> stam_query
+
+        stam_query["<tt>stam query [stam-tools]</tt><br><strong>Export STAM to W3C Web Annotations</strong>"]
+        consolidate["<tt>consolidate-web-annotations [annorepo-tools]</tt><br><strong>Consolidate normalised and non-normalised annotations</strong>"]
+        addcanvastarget["<tt>add-canvas-target-to-page-web-annotations [annorepo-tools]</tt><br><strong>Add Canvas targets to Page annotations</strong>"]
+        addurltopicture["<tt>add-url-to-picture-webannotations [annorepo-tools]</tt><br><strong>Adds a IIIF URL to Picture web annotations</strong>"]
+
+        stam_query ==> consolidate
+        consolidate ==> addcanvastarget
+        addcanvastarget ==> addurltopicture
+        addurltopicture ==> webannotations
+        webannotations@{ shape: docs, label: "<tt>work/*.webannotations.jsonl</tt><br><strong>W3C Web Annotations</strong> (JSONL+JSON-LD)<br><tt>make webannotations</tt>"}
+
+        scan_metadata ==> generate_manifests
+        tei_info ==> generate_manifests
+        generate_manifests["<tt>generate-manifests [text-info]</tt><br><strong>IIIF Manifest Generation</strong>"]
+        generate_manifests ==> manifests
+        manifests@{ shape: docs, label: "<tt>data/manifests/*.json</tt><br><strong>IIIF Manifests</strong> (JSON-LD)<br><tt>make manifests</tt>" }
+
+        scan_metadata ==> editem_apparatus_convert
+        tei ==> editem_apparatus_convert
+        editem_apparatus_convert["<tt>editem-apparatus-convert [editem-apparatus]</tt><br><strong>eDITem Apparatus Conversion</strong>"]
+        editem_apparatus_convert ==> apparatus
+
+        apparatus@{ shape: docs, label: "<tt>data/apparatus/*.json,html</tt><br><strong>Apparatus</strong> (JSON, HTML)<br><tt>make apparatus</tt>"}
+    end
+
+    subgraph ingest
+        direction TB
+
+        webannotations ==> upload_web_annotations
+
+        upload_web_annotations["<tt>upload-web-annotations [annorepo-tools]</tt><br><strong>Upload web annotations to Annorepo</strong><br><tt>make annorepo</tt>"]
+
+        texts ==> upload_texts
+
+        upload_texts["<strong>Upload texts to textsurf</strong><br><tt>make textsurf</tt>"]
+        indexer["<tt>wandexer</tt><br><b>Indexer</b><br><tt>make index</tt>"]
+
+        indexer_config@{ shape: doc, label: "<tt>etc/indexer/config.yml</tt><br><strong>Indexer Configuration</strong>"}
+        indexer_mapping@{ shape: doc, label: "<tt>etc/indexer/mapping.json</tt><br><strong>Indexer Mapping</strong>"}
+
+        indexer_config ==> indexer
+        indexer_mapping ==> indexer
+
+        scans ==> upload_scans
+        upload_scans["<b>Upload scans to Cantaloupe</b>"]
+
+        apparatus ==> upload_static_data
+        manifests ==> upload_static_data
+        upload_static_data["<b>Upload static data</b>"]
+    end
+
+    subgraph services
+        annorepo[/"<b>Annorepo</b><br><i>(web annotation server)</i>"/]
+        mongodb[/"MongoDB<br><i>(NoSQL database server)</i>"/]
+        annorepo === mongodb
+
+        upload_texts ==> textsurf
+        upload_web_annotations == "HTTPS POST/PUT + W3C Web Annotation Protocol" ==> annorepo
+
+
+        indexer -- "HTTP(S) GET" --> annorepo
+        indexer -- "HTTP(S) GET" --> textsurf
+
+        textsurf[/"<b>Textsurf</b><br><i>(text server)</i>"/]
+
+        indexer -- "HTTP(S) POST + ElasticSearch API" --> elasticsearch
+
+        elasticsearch[/"<strong>ElasticSearch</strong><br><i>(Search engine)</i>"/]
+        searchindex[("Text and annotation index<br><i>(for full text text search and faceted annotation search)</i>")]
+        elasticsearch === searchindex
+
+        annorepo ==> broccoli
+        textsurf ==> broccoli
+        elasticsearch ==> broccoli
+        annorepo ==> elasticsearch
+        textsurf ==> elasticsearch
+
+        broccoli_config@{ shape: doc, label: "<tt>etc/broccoli/config.yml</tt><br><i>configuration</i>"}
+        broccoli[/"<strong>Broccoli</strong><br><i>(Broker)</i>"/]
+
+        broccoli ==> textannoviz
+        broccoli_config ==> broccoli
+
+        textannoviz_config@{ shape: doc, label: "<tt>etc/textannoviz/config.json</tt><br><i>configuration</i>"}
+        textannoviz[/"<strong>TextAnnoViz</strong><br><i>(Web front-end)</i>"/]
+
+        textannoviz_config ==> textannoviz
+
+        upload_scans ==> cantaloupe
+        cantaloupe[/"<strong>Cantaloupe</strong><br><i>(IIIIF Image Server)</i>"/]
+
+        upload_static_data ==> static_server
+        static_server[/"<strong>HTTP Server for static data</strong><br><i>(nginx)</i>"/]
+    end
+
+    linkStyle default background:transparent,color:#009
+    classDef process fill:#cfc
+    class stam_fromxml,stam_translatetext,stam_translate,stam_query,consolidate,addcanvastarget,addurltopicture,upload_texts,upload_web_annotations,indexer,generate_manifests,editem_apparatus_convert,upload_scans,upload_static_data,validate_tei process
+
+    classDef service fill:#ccf
+    class broccoli,elasticsearch,annorepo,textsurf,textannoviz,mongodb,cantaloupe,static_server service
+
+    classDef data fill:#ffd
+    class docx,metadata,report,tei,stam,stam_translatetextconfig,stam_xmlconfig,texts,webannotations,broccoli_config,indexer_config,indexer_mapping,searchindex,textannoviz_config,scans,scan_metadata,manifests,apparatus,tei_info data
+
+    classDef group fill:#eee,border:2px,font-weight:bold,font-size:120%
+    class validation,conversion,ingest,services group
