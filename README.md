@@ -10,6 +10,16 @@ Cluster. All in-house software mentioned in this documentation can be found via
 The document serves both as an internal reference, as well as a technical show-case to
 external parties.
 
+## Design Philosophy
+
+* **Reproducibility** - Use the original sourcesa and allow going from zero to full end-results without human intervention
+* **Flexibility** - Flexibly accommodate heterogeneous data sources; upstream projects use different formats and different vocabularies.
+* **Uniformisation** - Data from distinct sources and projects is transformed into a more uniform vocabulary that our tools understand
+* **Service-oriented** - A multi-component service oriented architecture with a web-based user frontend.
+* **Scalability** - Handle both small corpora as well as large ones, allow running locally as well as distributed on a kubernetes cluster.
+* **Modularity & Interoperability** - Distinct interoperable software components with clearly distinct functions, no one-serve-all monoliths. Components may be interchangeable for others where appropriate.
+* **Reusability** - Components are reusable in other contexts.
+
 ## Service Oriented Architecture and Data pipeline for Text Collections
 
 We have ample experience publishing diverse scientific text collections. These
@@ -23,13 +33,14 @@ the editors, this may be TEI XML, PageXML, FoLiA XML or other formats.
 We distinguish the following stages in our pipeline, they are schematically shown below:
 
 1. **Validation** - Validated the corpus as delivered by the editors.
-2. **Conversion** - Converts the corpus to plain text and stand-off W3C Web Annotations (via STAM)
-    * Normalisation
+2. **Conversion** - Converts the corpus to plain text and stand-off W3C Web Annotations (radical standoff, via STAM)
+    * Standardised linked-open-data vocabulary
+    * Text Normalisation (e.g. hyphenation), *support for multiple text representations*
     * Apparatus Conversion
     * IIIF Manifest Generation
 3. **Ingest** - Loads the generated artifacts (plain text, annotations, images) into their respective services
 
-The pipeline itself is driven by GNU Make.
+The pipeline itself is driven by GNU Make and can be automatically invoked from CI/CD pipelines.
 
 ![Data Processing and Service Architecture](artifacts/architecture.png)
 
@@ -41,19 +52,13 @@ The pipeline itself is driven by GNU Make.
 * Communication protocols are shown as arrow labels
 * Lines represent the data/provisioning flow
 * Software marked with an asterisk is third-party software, all others are developed in-house.
+* Tools in the data pipeline are mentioned by their command-line invocations, if they are packaged
+  as a part of a larger suite of tools, that name is between square brackets
+* The make targets are given where applicable
 
-## 3. Data Enrichment pipelines
-
-Most data enrichment pipelines are documented elsewhere (direct links to schemas or READMEs/documentation with schemas):
-:
-
-* [Globalise Language Detection pipeline](https://github.com/knaw-huc/globalise-tools/blob/main/pipelines/langdetect/)
-* [Globalise Query Expansion pipeline (kweepeer)](https://github.com/knaw-huc/kweepeer)
-
-## 4. Data Models
+## Data Models
 
 Data models can be found elsewhere as well (direct links to schemas or READMEs/documentation with schemas):
 
 * [STAM](https://github.com/annotation/stam)
-* [Text Fabric](https://annotation.github.io/text-fabric/tf/about/datamodel.html)
-* [FoLiA](https://github.com/proycon/folia)
+* [Text & Annotation Vocabulary](https://ns.huc.knaw.nl/text_intro.html)
