@@ -86,7 +86,7 @@ flowchart TD
 
     subgraph services
         annorepo[/"<b>Annorepo</b><br><i>(web annotation server)</i>"/]
-        mongodb[/"MongoDB<br><i>(NoSQL database server)</i>"/]
+        mongodb[/"<b>MongoDB*</b><br><i>(NoSQL database server)</i>"/]
         annorepo === mongodb
 
         upload_texts ==> textsurf
@@ -100,7 +100,7 @@ flowchart TD
 
         indexer -- "HTTP(S) POST + ElasticSearch API" --> elasticsearch
 
-        elasticsearch[/"<strong>ElasticSearch</strong><br><i>(Search engine)</i>"/]
+        elasticsearch[/"<strong>ElasticSearch*</strong><br><i>(Search engine)</i>"/]
         searchindex[("Text and annotation index<br><i>(for full text text search and faceted annotation search)</i>")]
         elasticsearch === searchindex
 
@@ -122,7 +122,7 @@ flowchart TD
         textannoviz_config ==> textannoviz
 
         upload_scans ==> cantaloupe
-        cantaloupe[/"<strong>Cantaloupe</strong><br><i>(IIIIF Image Server)</i>"/]
+        cantaloupe[/"<strong>Cantaloupe*</strong><br><i>(IIIF Image Server)</i>"/]
 
         upload_static_data ==> static_server
         static_server[/"<strong>HTTP Server for static data</strong><br><i>(nginx)</i>"/]
