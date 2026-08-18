@@ -12,13 +12,14 @@ external parties.
 
 ## Design Philosophy
 
-* **Reproducibility** - Use the original sourcesa and allow going from zero to full end-results without human intervention
-* **Flexibility** - Flexibly accommodate heterogeneous data sources; upstream projects use different formats and different vocabularies.
+* **Reproducibility** - Use the original sources and allow going from zero to full end-results without human intervention. Also support live/incremental updates.
+* **Flexibility**  - Flexibly accommodate heterogeneous data sources; upstream projects use different formats and different vocabularies.
 * **Uniformisation** - Data from distinct sources and projects is transformed into a more uniform vocabulary that our tools understand
 * **Service-oriented** - A multi-component service oriented architecture with a web-based user frontend.
-* **Scalability** - Handle both small corpora as well as large ones, allow running locally as well as distributed on a kubernetes cluster.
+* **Scalability** - Handle both small corpora as well as large ones, allow running on a local system (e.g. in development) as well as distributed on a kubernetes cluster for production scenarios.
 * **Modularity & Interoperability** - Distinct interoperable software components with clearly distinct functions, no one-serve-all monoliths. Components may be interchangeable for others where appropriate.
-* **Reusability** - Components are reusable in other contexts.
+* **Reusability** - Components are reusable in other contexts; existing components (incl 3rd party components) are (re)used where applicable.
+* **Simplicity** - Though the resulting pipeline is complex, the individual components and their connections retain a certain simplicity. Complexity and abstraction should only be introduced for a good reason.
 
 ## Service Oriented Architecture and Data pipeline for Text Collections
 
