@@ -1,6 +1,6 @@
 %%{init: {"flowchart": {"htmlLabels": true}} }%%
 flowchart TD
-    tei@{ shape: docs, label: "<tt>tei/*.xml</tt><br><strong>Source documents</strong> (TEI XML)" }
+    tei@{ shape: docs, label: "<tt>datasource/{tei,pagexml}/*.xml</tt><br><strong>Source documents</strong> (TEI XML, PageXML, FoLiA)" }
     scans@{ shape: docs, label: "<tt>data/scans/</tt><br><strong>Scans</strong><br><tt>make scans</tt>" }
     scan_metadata@{ shape: docs, label: "<tt>data/scans/*.tsv</tt><br><strong>Scan Metadata</strong><br><tt>make scans</tt>" }
 
@@ -11,7 +11,7 @@ flowchart TD
     end
 
     subgraph conversion
-        stam_xmlconfig@{ shape: doc, label: "<tt>etc/stam/fromxml/tei.toml</tt><br><strong>TEI XML to STAM Mapping</strong>"}
+        stam_xmlconfig@{ shape: doc, label: "<tt>etc/stam/fromxml/{tei,pagexml}.toml</tt><br><strong>Source XML to STAM Mapping</strong>"}
         tei ==> stam_fromxml
         stam_xmlconfig ==> stam_fromxml
 
