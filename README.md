@@ -17,7 +17,7 @@ may be literary text editions, historical manuscripts, linguistically-annotated
 collections or large corpora from automatic OCR or Handwritten Text
 Recognition.
 
-![Data Processing and Service Architecture](architecture.png)
+![Data Processing and Service Architecture](artifacts/architecture.png)
 
 ## 3. Data Enrichment pipelines
 

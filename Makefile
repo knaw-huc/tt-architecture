@@ -1,22 +1,22 @@
-.PHONY: all png
+.PHONY: all png artifacts
 
-all: png README.html README.pdf
+all artifacts: png artifacts/README.html artifacts/README.pdf
 
-%.html: %.md
-	@echo "Note: for this to work you require pandoc and mermaid 11.4 or above)"""
+artifacts/%.html: %.md
+	@echo "Note: for this to work you require pandoc and mermaid 11.4 or above)""">&2
 	pandoc -t html -o $@ $<
 
-%.pdf: %.md
-	@echo "Note: for this to work you require pandoc and mermaid 11.4 or above)"""
+artifacts/%.pdf: %.md
+	@echo "Note: for this to work you require pandoc and mermaid 11.4 or above)""">&2
 	pandoc -t pdf -o $@ $<
 
-png: architecture.png
+png: artifacts/architecture.png
 
-%.svg: %.mmd
-	mmdc -i $< -o $(basename $<).svg
+artifacts/%.svg: %.mmd
+	mmdc -i $< -o artifacts/$*.svg
 
-%.png: %.mmd
-	mmdc -w 3820 -i $< -o $(basename $<).png
+artifacts/%.png: %.mmd
+	mmdc -w 3820 -i $< -o artifacts/$*.png
 
 clean:
-	-rm -f architecture.png README.html README.pdf
+	-rm -f artifacts/*
