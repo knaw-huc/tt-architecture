@@ -1,0 +1,79 @@
+%%{init: {"flowchart": {"htmlLabels": true}} }%%
+flowchart TD
+    inputdocs@{ shape: docs, label: "<strong>Source documents</strong> (TEI XML, PageXML, FoLiA)" }
+    scans@{ shape: docs, label: "<strong>Scans</strong>" }
+
+    validation["<strong>Validation</strong>"]
+
+    conversion["<strong>Conversion</strong><br>(STAM and other tools)"]
+
+    inputdocs ==> validation
+    inputdocs ==> conversion
+
+    stam_xmlconfig@{ shape: doc, label: "<strong>Source XML to STAM Mapping</strong>"}
+
+    stam_xmlconfig ==> conversion
+
+    webannotations@{ shape: docs, label: "<strong>W3C Web Annotations</strong> (JSONL+JSON-LD)"}
+    manifests@{ shape: docs, label: "<strong>IIIF Manifests</strong> (JSON-LD)" }
+    apparatus@{ shape: docs, label: "<strong>Apparatus</strong> (JSON, HTML)"}
+    texts@{ shape: docs, label: "<strong>Plain texts</strong>"}
+
+    conversion ==> webannotations ==o annorepo
+    conversion ==> manifests ==o static_server
+    conversion ==> apparatus ==o static_server
+    conversion ==> texts ==o textsurf
+
+    scans ==> conversion
+    scans ==o cantaloupe
+
+
+    webannotations ==> indexer
+    indexer["<tt>tapir</tt><br><b>Indexer</b><br><tt>make index</tt>"]
+
+    subgraph SERVICES
+        annorepo[/"<b>Annorepo</b><br><i>(web annotation server)</i>"/]
+        mongodb[/"<b>MongoDB*</b><br><i>(NoSQL database server)</i>"/]
+        annorepo --- mongodb
+
+
+        indexer == "HTTP(S) GET" ==o annorepo
+        indexer == "HTTP(S) GET" ==o textsurf
+
+        textsurf[/"<b>Textsurf</b><br><i>(text server)</i>"/]
+
+        indexer == "HTTP(S) POST + ElasticSearch API" ==o elasticsearch
+
+        elasticsearch[/"<strong>ElasticSearch*</strong><br><i>(Search engine)</i>"/]
+        searchindex[("Text and annotation index<br><i>(for full text text search and faceted annotation search)</i>")]
+        elasticsearch --- searchindex
+
+        annorepo ==> broccoli
+        textsurf ==> broccoli
+        elasticsearch ==> broccoli
+        annorepo ==> elasticsearch
+        textsurf ==> elasticsearch
+
+        broccoli[/"<strong>Broccoli</strong><br><i>(Broker)</i>"/]
+
+        broccoli ==> textannoviz
+
+        textannoviz[/"<strong>TextAnnoViz</strong><br><i>(Web front-end)</i>"/]
+
+        cantaloupe[/"<strong>Cantaloupe*</strong><br><i>(IIIF Image Server)</i>"/]
+
+        static_server[/"<strong>HTTP Server for static data</strong><br><i>(nginx)</i>"/]
+    end
+
+    linkStyle default background:transparent,color:#009
+    classDef process fill:#cfc
+    class ,validation,conversion,stam_fromxml,stam_translatetext,stam_translate,stam_query,consolidate,addcanvastarget,addurltopicture,upload_texts,upload_web_annotations,indexer,generate_manifests,editem_apparatus_convert,upload_scans,upload_static_data,validate_tei process
+
+    classDef service fill:#ccf
+    class broccoli,elasticsearch,annorepo,textsurf,textannoviz,mongodb,cantaloupe,static_server service
+
+    classDef data fill:#ffd
+    class docx,metadata,report,inputdocs,stam_translatetextconfig,stam_xmlconfig,texts,webannotations,broccoli_config,indexer_config,indexer_mapping,searchindex,textannoviz_config,scans,scan_metadata,manifests,apparatus,tei_info data
+
+    classDef group fill:#eee,border:2px,font-weight:bold,font-size:120%
+    class SERVICES group

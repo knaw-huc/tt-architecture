@@ -33,7 +33,7 @@ the editors, this may be TEI XML, PageXML, FoLiA XML or other formats.
 
 We distinguish the following stages in our pipeline, they are schematically shown below:
 
-1. **Validation** - Validated the corpus as delivered by the editors.
+1. **Validation** - Validates the corpus as delivered by the editors.
 2. **Conversion** - Converts the corpus to plain text and stand-off W3C Web Annotations (radical standoff, via STAM)
     * Standardised linked-open-data vocabulary
     * Text Normalisation (e.g. hyphenation), *support for multiple text representations*
